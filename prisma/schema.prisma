@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                     String                 @id @default(uuid())
+  name                   String
+  // Stripe uses this way to store the amount.
+  priceInCents           Int
+  // This is a digitial product so these describes the location of the product.
+  filePath               String
+  imagePath              String
+  description            String
+  // Only product that are available for purchase.
+  isAvailableForPurchase Boolean                @default(true)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  orders                 Order[]
+  downloadVerifications  DownloadVerification[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // A user can have multiple orders.
+  orders    Order[]
+}
+
+model Order {
+  id               String   @id @default(uuid())
+  // The paid amount can differ to the product amount due to price increases, discount etc.
+  pricePaidInCents Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userId    String
+  productId String
+  // Foreign key ralationship for orders.
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade) // If an user is deleted then delete all of their orders.
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict) // If a product has been ordered then it can not be deleted.
+}
+
+model DownloadVerification {
+  id        String   @id @default(uuid())
+  // Time tha the link is valid for.
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  // The products that is downloaded.
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)  // If you delete a product then delete all associated links.
+}
