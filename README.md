@@ -1,27 +1,46 @@
 #  E-Commerce Store
 
-Uses Next.js v14 with Prisma using SqlLite database, [chadcn](https://ui.shadcn.com/) for tailered components and Tailwind for styling, zod for validation. It also implements payments with Stripe.
+A Next.js v14 e-commerce application using the folliwng technologies:
+
+- [SqlLite](https://sqldocs.org/sqlite/next-js-sqlite/) database (for local database development), 
+- [Prisma](https://www.prisma.io/nextjs) for ORM,
+- [shadcn](https://ui.shadcn.com/) for tailered components,
+- [Tailwind](https://tailwindcss.com/docs/guides/nextjs) for styling, 
+- [zod](https://zod.dev/) for validation,
+- [Stripe](https://vercel.com/guides/getting-started-with-nextjs-typescript-stripe) for payments,
+- [Resend](https://resend.com/docs/send-with-nextjs) for sending email,
+- [react-email](https://react.email/) for styling emails.
+
+The project is built from the [video](https://www.youtube.com/watch?v=iqrgggs0Qk0)
 
 ## Project was created as follows
 
+### Initial Setup
 1. Create a new Next,js project :   
    `npx create-next-app@latest`
-2. Add Prisma :
+
+   Select Typescript, EsLint, Tailwind, Application Routerand  use src.
+
+### Add Prisma
+1. Add Prisma :
    `npm i --save-dev ts-node `
    `npm install prisma --save-dev`
-3. Setup Prisma using SqlLite :
+2. Setup Prisma using SqlLite :
    `npx prisma init --datasource-provider sqlite`
-4. Add a schema by modifying the [`schema.prisma`](./prisma/schema.prisma) file. 
-5. Create a Prisma migration :
+3. Add a schema by modifying the [`schema.prisma`](./prisma/schema.prisma) file. 
+4. Create a Prisma migration :
    `npx prisma migrate dev --name init` 
-6. Add ShadCN to the project :
-  `npx shadcn-ui@latest init`
+
+Watch this [video](https://youtu.be/RebA5J-rlwg?si=j6viGp3LSb2tp1JJ) to learn Prisma.
+
+###  Add ShadCN to the project :
+1.  `npx shadcn-ui@latest init`
     ```
     Which style would you like to use? › Default
     Which color would you like to use as base color? › Slate
     Do you want to use CSS variables for colors? › yes
     ```
-7.  Update the [root layout](./src/app/layout.tsx) as follows :
+2.  Update the [root layout](./src/app/layout.tsx) as follows :
       ```js
       import type { Metadata } from "next";
       import { Inter } from "next/font/google"
@@ -55,32 +74,91 @@ Uses Next.js v14 with Prisma using SqlLite database, [chadcn](https://ui.shadcn.
          );
       }
       ```
-8. Update the Tailwind theme to use chadcn font-sans:
+3. Update the Tailwind theme to use shadcn font-sans:
    ```json
    import { fontFamily } from "tailwindcss/defaultTheme"
+   
    ...
+   
       fontFamily: {
          sans: ["var(--font-sans)", ...fontFamily.sans],
       },
    ```
 
-  
+When you add a new component to the project you enter the following command:
+
+`npx shadcn-ui@latest add <component>` 
+
+This will add the component to [`src/components/ui/`](src/components/ui/).
+
+### Project Structure
+
+The solution is split in two areas : 
+- One for backend administration tasks such as managing products, users and orders.
+- One for the customer facing public website, where users can buy the product.
+
+### Form Validation
+
+All form validations use zod, watch this [video tutorial](https://youtu.be/L6BE-U3oy80?si=DsrEA2mJcBq7fDVI) for further information. 
+
+### Formatting Date and Currencies
+
+Watch this [video](https://youtu.be/4oGWpTAY_hc?si=AOCVRdaQYHqyXPOe) to understand formatting using the [Intl](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) functions.
+
+These are implemented in the [`src/lib/formatters.ts`](src/lib/formatters.ts) file.
+
+### Admin Security
+
+The [`src/middleware.ts`](src/middleware.ts) file implements a simple authentication for all pages uner the `src/app/admin` folder. Teh user and password is kept in the .env file.
+
+### Email Templates
+
+All email templates are implemented using react-email and are kept in the [`src/email`](src/email/) folder.
+
+You can view and test them using the command :
+
+`npm run email`
+
+It will host a local webservice exposing all react-email templates in the `src/email` folder.
+
+### Caching
+
+Caching is implemented in the [`src/lib/cache.ts`](src/lib/cache.ts) file.
+
 ## Clone existing repository
 
 If you clone the repository the you need top create the following files:
 
-1. A `.env` file in the root directory with the following content :
+1. A `.env.local` file in the root directory with the following content :
       ```
       DATABASE_URL="file:./dev.db"
+      NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+      
+      # Simple Admin Security
       ADMIN_USERNAME=admin
       HASHED_ADMIN_PASSWORD=FmJ37pOVayNUV54asF4zd2O6DmSureEVY2TmhN5CfXIqAEToimcGcJ+lKmmbc5V3zxpYTr4zUJizYhkKNSj85g==
+
+      # Stripe keys
+      NEXT_PUBLIC_STRIPE_PUBLIC_KEY=pk...
+      STRIPE_SECRET_KEY=sk...
+      STRIPE_WEBHOOK_SECRET=whsec_...
+      
+      # Resend key and settings
+      RESEND_API_KEY=re_...
+      SENDER_EMAIL=onboarding@resend.dev
       ```
  
 
-## Stripe local testing 
+## Stripe local testing for webhook
+
+The following will redirect the stripe webhook call to our local endpoint so the order completed functionality is triggered, i.e. create the order and customer. 
 
 1. Install Stripe CLI
 2. Login to Stripe `stripe login`
 3. Redirect the webhooks to local `stripe listen --forward-to localhost:3000/webhooks/stripe`
 
-Replace chadcn table with data-table
+
+## Future Work
+
+- [ ] Replace shadcn table component with data-table component, it has pagination, sorting etc..
+- [ ] 
